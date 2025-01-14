@@ -1,0 +1,5 @@
+[web]
+192.168.56.101 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
+
+[db]
+192.168.56.102 ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/id_rsa
