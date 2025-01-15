@@ -1,0 +1,24 @@
+---
+- name: Atualizar Servidores Linux - Somente Atualizações de Segurança
+  hosts: all
+  become: true
+  tasks:
+    - name: Determinar a distribuição do SO
+      ansible.builtin.setup:
+        filter: ansible_distribution
+      register: os_info
+
+    - name: Atualizar pacotes de segurança no Debian/Ubuntu
+      ansible.builtin.apt:
+        upgrade: safe
+      when: os_info.ansible_facts.ansible_distribution in ['Debian', 'Ubuntu']
+      register: security_update_result
+
+    - name: Atualizar pacotes de segurança no Rocky Linux
+      ansible.builtin.yum:
+        security: yes
+        update_only: yes
+      when: os_info.ansible_facts.ansible_distribution == "Rocky"
+      register: security_update_result
+
+ 
