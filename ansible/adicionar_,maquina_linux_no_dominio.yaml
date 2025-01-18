@@ -1,0 +1,210 @@
+---
+- name: Ingressar máquina Linux no AD
+  hosts: all
+    #become: yes
+  vars:
+    ad_ip: "ip_do_ad"
+    domain_name: "seu_dominio"
+    domain_name_caixa_alta: "SEU_DOMINIO_EM_CAIXA_ALTA"
+    domain_user: "Usuario_com_priveliod_de_adm_dominio"
+    domain_password: "Senha_do_usuario"
+    backup_dir: "/home/backup"
+    backup_date: "{{ lookup('pipe', 'date +%Y%m%d') }}"
+  tasks:
+
+    - name: Criar diretórios de backup
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: 0755
+      loop:
+        - "{{ backup_dir }}"
+        - "{{ backup_dir }}/upload"
+
+    - name: Backup de arquivos
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ backup_dir }}/{{ item | basename }}.{{ backup_date }}"
+        remote_src: yes
+      loop:
+        - /etc/sudoers
+        - /etc/pam.d/common-session
+
+    - name: Instalar pacotes necessários (Ubuntu/Debian)
+      ansible.builtin.apt:
+        name:
+          - realmd
+          - sssd
+          - sssd-tools
+          - samba-common
+          - krb5-user
+          - packagekit
+          - adcli
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Instalar pacotes necessários (Rocky/Red Hat)
+      ansible.builtin.yum:
+        name:
+          - realmd
+          - sssd
+          - sssd-tools
+          - samba-common
+          - krb5-workstation
+          - oddjob
+          - oddjob-mkhomedir
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Descobrir domínio
+      ansible.builtin.shell: "realm discover {{ domain_name }}"
+      register: realm_discovery
+      ignore_errors: yes
+
+    - name: Verificar se o domínio foi descoberto
+      ansible.builtin.debug:
+        msg: "Domínio descoberto: {{ realm_discovery.stdout }}"
+      when: realm_discovery is defined and realm_discovery.stdout is not none
+
+    - name: Ingressar no domínio
+      ansible.builtin.shell: |
+        echo '{{ domain_password }}' | realm join --user={{ domain_user }} {{ domain_name }}
+      register: domain_join
+      args:
+        executable: /bin/bash
+      ignore_errors: yes
+
+    - name: Exibir resultado do ingresso no domínio
+      ansible.builtin.debug:
+        msg: "Resultado do ingresso no domínio: {{ domain_join.stdout }}"
+      when: domain_join is defined and domain_join.stdout is not none
+
+    - name: Configurar SSSD
+      ansible.builtin.copy:
+        dest: /etc/sssd/sssd.conf
+        content: |
+          [sssd]
+          services = nss, pam
+          domains = {{ domain_name }}
+
+          [domain/{{ domain_name }}]
+          ad_domain = {{ domain_name }}
+          krb5_realm = {{ domain_name | upper }}
+          realmd_tags = manages-system joined-with-adcli
+          cache_credentials = true
+          id_provider = ad
+          auth_provider = ad
+          access_provider = ad
+          override_homedir = /home/%d/%u
+          default_shell = /bin/bash
+          #esse servidor esta liberado login para membros do grupo sudo_linux caso necessario adicione
+          simple_allow_users = {{ domain_user }}
+          simple_allow_groups = sudo_linux@{{ domain_name }}
+          use_fully_qualified_names = True
+          ldap_id_mapping = True
+          krb5_store_password_if_offline = true
+          krb5_realm = {{ domain_name_caixa_alta }}
+          dyndns_update = False
+   
+        owner: root
+        group: root
+        mode: 0600
+
+    - name: Configurar Kerberos
+      ansible.builtin.copy:
+        dest: /etc/krb5.conf
+        content: |
+          [libdefaults]
+              default_realm = {{ domain_name_caixa_alta }}
+              dns_lookup_realm = true
+              dns_lookup_kdc = true
+              rdns = false
+              ticket_lifetime = 24h
+              renew_lifetime = 7d
+              forwardable = true
+
+          [realms]
+              {{ domain_name_caixa_alta }} = {
+                  kdc = {{ ad_ip }}
+                  admin_server = {{ ad_ip }}
+                  default_domain = {{ domain_name }}
+              }
+
+          [domain_realm]
+              .{{ domain_name }} = {{ domain_name_caixa_alta }}
+              {{ domain_name }} = {{ domain_name_caixa_alta }}
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Validar configuração do Kerberos
+      ansible.builtin.shell: |
+        echo '{{ domain_password }}' | kinit {{ domain_user }}@{{ domain_name | upper }}
+      register: kerberos_validation
+      args:
+        executable: /bin/bash
+        stdin: "{{ domain_password }}"
+      ignore_errors: yes
+
+    - name: Exibir resultado da validação do Kerberos
+      ansible.builtin.debug:
+        msg: "Resultado da validação do Kerberos: {{ kerberos_validation.stdout }}"
+      when: kerberos_validation is defined and kerberos_validation.stdout is not none
+
+
+
+    - name: Reiniciar e habilitar serviço SSSD
+      ansible.builtin.systemd:
+        name: sssd
+        enabled: yes
+        state: restarted
+
+    - name: Configurar sudo para o grupo sudo_linux@cepel.br sem senha
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/sudo_linux
+        content: |
+          %sudo_linux@{{ domain_name }} ALL=(ALL) NOPASSWD:ALL
+          
+        owner: root
+        group: root
+        mode: 0440
+
+    - name: Configurar PAM para criar diretório home
+      ansible.builtin.lineinfile:
+        path: /etc/pam.d/common-session
+        line: "session required pam_mkhomedir.so skel=/etc/skel/ umask=0077"
+        state: present
+
+    - name: Reiniciar serviços relacionados (apenas RedHat)
+      ansible.builtin.systemd:
+        name: oddjobd
+        enabled: yes
+        state: restarted
+      when: ansible_os_family == "RedHat"
+
+
+    - name: Instalar o pacote vim (Ubuntu/Debian)
+      ansible.builtin.apt:
+        name: vim
+        state: present
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Instalar o pacote vim (Rocky/Red Hat)
+      ansible.builtin.yum:
+        name: vim
+        state: present
+      when: ansible_os_family == "RedHat"
+
+    - name: Configurar vim como editor padrão para todos os usuários
+      ansible.builtin.lineinfile:
+        path: /etc/profile.d/default_editor.sh
+        line: 'export EDITOR=vim'
+        create: yes
+        owner: root
+        group: root
+        mode: 0755
+        
