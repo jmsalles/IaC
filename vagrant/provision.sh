@@ -2,17 +2,17 @@
 #  ssh-keygen -q -t rsa -f key -N ''
 
 #Local aonde estao as chave public e privada
-KEY_PATH='/vagrant/files'
+KEY_PATH='/vagrant/arquivos'
 
 #Criando o diretorio .ssh para usuario root e vagrant
 mkdir -p /root/.ssh
 mkdir -p /home/vagrant/.ssh
 #Copiando as chaves publica e privadas e grantindo o acesso a todos os hos sem senha para o usuario root e vagrant
-cp $KEY_PATH/key /root/.ssh/id_rsa
-cp $KEY_PATH/key /home/vagrant/.ssh/id_rsa
-cp $KEY_PATH/key.pub /root/.ssh/id_rsa.pub
-cp $KEY_PATH/key.pub /home/vagrant/.ssh/id_rsa.pub
-cp $KEY_PATH/key.pub /root/.ssh/authorized_keys
+cp $KEY_PATH/id_rsa /root/.ssh/id_rsa
+cp $KEY_PATH/id_rsa /home/vagrant/.ssh/id_rsa
+cp $KEY_PATH/id_rsa.pub /root/.ssh/id_rsa.pub
+cp $KEY_PATH/id_rsa.pub /home/vagrant/.ssh/id_rsa.pub
+cp $KEY_PATH/id_rsa.pub /root/.ssh/authorized_keys
 #cp $KEY_PATH/key.pub /home/vagrant/.ssh/authorized_keys
 chmod 400 /root/.ssh/id_rsa*
 chmod 400 /home/vagrant/.ssh/id_rsa*
