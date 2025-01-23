@@ -4,7 +4,7 @@
     #  become: yes
   vars:
     glpi_agent_url: "https://github.com/glpi-project/glpi-agent/releases/download/1.11/glpi-agent-1.11-linux-installer.pl"
-    glpi_server_url: "https://url_do_servido_glpi.com.br"
+    glpi_server_url: "https://endereco_servidor_glpi"
     installer_path: "/tmp/glpi-agent-installer.pl"
 
   tasks:
@@ -70,3 +70,4 @@
     - name: Exibir resultado da validação do inventário
       ansible.builtin.debug:
         msg: "Resultado da validação do inventário: {{ inventory_status.stdout }}"
+
