@@ -1,19 +1,3 @@
-# Curso Docker DCA 
-**Curso 100% Gratuito!**
-
-Material do Curso  
-
-[![caiodelgadonew/docker](https://img.shields.io/github/stars/caiodelgadonew/docker?label=caiodelgadonew%2Fdocker&logo=github&style=for-the-badge)](https://github.com/caiodelgadonew/docker)
-
-Redes Sociais
-
-[![Linktr.ee](https://img.shields.io/website?down_message=caiodelgadonew&label=LINKTR.EE&logo=linktree&style=for-the-badge&up_message=caiodelgadonew&url=https%3A%2F%2Flinktr.ee%2Fcaiodelgadonew)](https://linktr.ee/caiodelgadonew)
-
-
-O conteúdo será ministrado ao vivo no canal do Youtube
-
-[![Youtube Channel Subscribers](https://img.shields.io/youtube/channel/subscribers/UCQnpN5AUd36lnMHuIl_rihA?label=YOUTUBE&logo=youtube&style=for-the-badge&logoColor=red)](https://www.youtube.com/caiodelgadonew) 
-
 ## Preparação do Ambiente
 
 > **IMPORTANTE!** - no momentro que estou escrevendo esse guia o vagrant esta na versão 2.4.3 sem suporte a versão atual o virtualbox 7.1 por isso fazer o download da versao 6.1.48 do virtual ( ultima versão suportado pelo vagrant usando nesse guia)
@@ -70,6 +54,10 @@ $ vagrant port node01
 # Destruir todas as VM ndo Vagrantfile
 $ vagrant destroy 
 # Destruir todas as VM ndo Vagrantfile -sem confirmação
+
+
+https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/
+
 $ vagrant destroy -f
 # Provisionar apenas uma VM Especifica Ex master
 $ vagrant destroy master 
