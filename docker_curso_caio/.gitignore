@@ -1,0 +1,4 @@
+html/*
+*.html
+.DS_Store
+*.drawio
