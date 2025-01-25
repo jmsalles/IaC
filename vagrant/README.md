@@ -54,11 +54,8 @@ $ vagrant port node01
 # Destruir todas as VM ndo Vagrantfile
 $ vagrant destroy 
 # Destruir todas as VM ndo Vagrantfile -sem confirmação
-
-
-https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/
-
 $ vagrant destroy -f
 # Provisionar apenas uma VM Especifica Ex master
 $ vagrant destroy master 
 ``` 
+https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/
