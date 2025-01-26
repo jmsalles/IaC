@@ -16,6 +16,9 @@ Vagrant.configure("2") do |config|
       machine.vm.hostname = "#{name}.jmsalles.casa"
       machine.vm.network "private_network", ip: "192.168.56.#{conf["ip"]}"
       
+      # Sincronize o diretório atual do host com a VM
+      machine.vm.synced_folder ".", "/vagrant", type: "rsync"
+
       # Configuração para o provider libvirt
       machine.vm.provider "libvirt" do |libvirt|
         libvirt.memory = conf["memory"].to_i
