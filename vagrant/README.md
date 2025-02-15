@@ -4,58 +4,69 @@
 
 1. Garantir que o [Intel VMX/VT](https://www.asus.com/br/support/FAQ/1043786/) ou [AMD-V/SVM](https://www.asus.com/br/support/FAQ/1038245/) está habilitado na BIOS
 
-3. Instalar os pacotes:
-  - [Virtualbox 6.1](https://www.virtualbox.org/wiki/Download_Old_Builds_6_1)
-  - [Vagrant](https://www.vagrantup.com/downloads)
-  - [git](https://git-scm.com/download/)
+2. Instalar os pacotes:
+
+- [Virtualbox 6.1](https://www.virtualbox.org/wiki/Download_Old_Builds_6_1)
+- [Vagrant](https://www.vagrantup.com/downloads)
+- [git](https://git-scm.com/download/)
 
 4. Clonar este repositório
+
 ```bash
 git clone https://github.com/jmsalles/docker.git
 ```
 
 5. Fazer o Download das Vagrant Boxes
-> **IMPORTANTE!** - Link para pesquisa das Boxes Disponveis 
-  - [Vagrant Box](https://portal.cloud.hashicorp.com/vagrant/discover?query=ubuntu)
+   > **IMPORTANTE!** - Link para pesquisa das Boxes Disponveis
+
+- [Vagrant Box](https://portal.cloud.hashicorp.com/vagrant/discover?query=ubuntu)
+
 ```bash
 $ vagrant box add --provider virtualbox ubuntu/focal64
-``` 
-#a
-6. Provisionar as VM no VirtualBox
+```
+
+#a 6. Provisionar as VM no VirtualBox
+
 ```bash
 # Provisionar todas as VM ndo Vagrantfile
-$ vagrant up 
+$ vagrant up
 # Provisionar apenas uma VM Especifica Ex master
-$ vagrant up master 
-``` 
+$ vagrant up master
+```
 
 7. Acessar VM Provisionada
-```bash
-$ vagrant ssh master
-``` 
 
-7. Acessar VM Provisionada
 ```bash
 $ vagrant ssh master
-``` 
+```
+
+7. Sincronizar as pastas do host com a VM
+
+```bash
+$ vagrant rsync master
+```
 
 7. Listar as Boxes
+
 ```bash
 $ vagrant box list
-``` 
+```
 
 7. Listar as portas de uma vm
+
 ```bash
 $ vagrant port node01
-``` 
+```
 
 8. Destruir as VM no VirtualBox
+
 ```bash
 # Destruir todas as VM ndo Vagrantfile
-$ vagrant destroy 
+$ vagrant destroy
 # Destruir todas as VM ndo Vagrantfile -sem confirmação
 $ vagrant destroy -f
 # Provisionar apenas uma VM Especifica Ex master
-$ vagrant destroy master 
-``` 
+$ vagrant destroy master
+```
+
 https://fedoramagazine.org/vagrant-qemukvm-fedora-devops-sysadmin/
